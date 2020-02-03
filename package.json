@@ -10,6 +10,9 @@
 		"Other"
   ],
   "publisher": "link-checker",
+  "repository": {
+    "url": "https://github.com/terakilobyte/link-checker.git"
+  },
 	"activationEvents": [
 		"onLanguage:markdown",
 		"onLanguage:plaintext",
