@@ -1,13 +1,13 @@
 {
 	"name": "link-checker",
-	"displayName": "link-checker",
+	"displayName": "Link Checker",
 	"description": "Checks links for 200 OK and, in the case of Github, repository staleness.",
 	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
 	"categories": [
-		"Other"
+    "Linters"
   ],
   "publisher": "link-checker",
   "repository": {
