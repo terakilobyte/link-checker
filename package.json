@@ -13,8 +13,7 @@
 		"onLanguage:markdown",
 		"onLanguage:plaintext",
 		"onLanguage:restructuredtext",
-		"onCommand:extension.link-check",
-		"onCommand:workbench.action.files.save"
+		"onCommand:extension.link-check"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
