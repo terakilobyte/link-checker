@@ -2,17 +2,17 @@
 	"name": "link-checker",
 	"displayName": "Link Checker",
 	"description": "Checks links for 200 OK and, in the case of Github, repository staleness.",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
 	"categories": [
-    "Linters"
-  ],
-  "publisher": "link-checker",
-  "repository": {
-    "url": "https://github.com/terakilobyte/link-checker.git"
-  },
+		"Linters"
+	],
+	"publisher": "link-checker",
+	"repository": {
+		"url": "https://github.com/terakilobyte/link-checker"
+	},
 	"activationEvents": [
 		"onLanguage:markdown",
 		"onLanguage:plaintext",
@@ -26,7 +26,27 @@
 				"command": "extension.link-check",
 				"title": "Link Check"
 			}
-		]
+		],
+    "configuration": {
+      "title": "Link Checker",
+      "properties": {
+        "linkChecker.roleFile": {
+          "type": "object",
+          "default": {},
+          "description": "The location of the role file. If defined, this extension will check for valid role links. This feature is a work in progress, mainly for use at MongoDB. If you would find this feature useful, please file an issue."
+        },
+        "linkChecker.roleFile.remote": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether or not the role file is remote (https), or local (filesystem)"
+        },
+        "linkChecker.roleFile.path": {
+          "type": "string",
+          "default": "",
+          "description": "the absolute path, or url, of the role file"
+        }
+      }
+    }
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -41,9 +61,9 @@
 		"@types/mocha": "^7.0.1",
 		"@types/node": "^12.11.7",
 		"@types/vscode": "^1.41.0",
-		"eslint": "^6.8.0",
-		"@typescript-eslint/parser": "^2.18.0",
 		"@typescript-eslint/eslint-plugin": "^2.18.0",
+		"@typescript-eslint/parser": "^2.18.0",
+		"eslint": "^6.8.0",
 		"glob": "^7.1.6",
 		"mocha": "^7.0.1",
 		"typescript": "^3.7.5",
