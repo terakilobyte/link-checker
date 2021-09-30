@@ -3,13 +3,33 @@ import * as linkify from "linkifyjs";
 import axios, { AxiosRequestConfig } from "axios";
 import { gDC, ghClient, gContext, infoChannel } from "./extension";
 
-const gDA = Array<vscode.Diagnostic>();
+let gDA = Array<vscode.Diagnostic>();
+
+type LinkError = {
+  e: Error;
+  document: vscode.TextDocument;
+  idx: number;
+  position: number;
+  link: linkify.FindResultHash;
+};
+enum LinkStatus {
+  PENDING,
+  OK,
+  NOTOK,
+}
+type LinkResult = {
+  linkStatus: LinkStatus | undefined;
+  linkError: LinkError | undefined;
+};
+
+let seenUrls = new Map<String, LinkResult>();
 
 export const linkCheck = () => {
   let config = vscode.workspace.getConfiguration("linkChecker");
   infoChannel.appendLine(JSON.stringify(config));
   const document = vscode.window.activeTextEditor?.document;
   gDC.clear();
+  gDA = Array<vscode.Diagnostic>();
   const validateLinks = () => {
     if (document === undefined) {
       return;
@@ -34,65 +54,117 @@ export const linkCheck = () => {
           return;
         }
         let position = line.search(link.value);
-        if (
-          link.href.startsWith("https://github.com/") ||
-          link.href.startsWith("http://github.com/")
-        ) {
-          let [owner, repo, ..._rest] = link.href
-            .replace(/https?:\/\/github\.com\//, "")
-            .split("/");
-          return ghClient.repos
-            .get({ owner, repo })
-            .then((res: any) => {
-              let lastPushed = Date.parse(res.data.pushed_at);
-              if ((Date.now() - lastPushed) / (1000 * 3600 * 24 * 365) > 1) {
-                throw new Error("stale repository");
-              }
-            })
-            .catch((e: Error) => reportError(e, document, idx, position, link));
-        }
+        if (!seenUrls.has(link.href)) {
+          seenUrls.set(link.href, {
+            linkStatus: LinkStatus.PENDING,
+            linkError: undefined,
+          });
+          if (
+            link.href.startsWith("https://github.com/") ||
+            link.href.startsWith("http://github.com/")
+          ) {
+            let [owner, repo, ..._rest] = link.href
+              .replace(/https?:\/\/github\.com\//, "")
+              .split("/");
 
-        getURL(link.href)
-          .then((response) => {
-            let status = response.status;
-            if (status !== 200) {
-              throw new Error(status.toString());
-            }
-          })
-          .catch((e) => reportError(e, document, idx, position, link));
+            return ghClient.repos
+              .get({ owner, repo })
+              .then((res: any) => {
+                let lastPushed = Date.parse(res.data.pushed_at);
+                if ((Date.now() - lastPushed) / (1000 * 3600 * 24 * 365) > 1) {
+                  throw new Error("stale repository");
+                }
+                seenUrls.set(link.href, {
+                  linkStatus: LinkStatus.OK,
+                  linkError: undefined,
+                });
+              })
+              .catch((e: Error) => {
+                let linkError = createError(e, document, idx, position, link);
+                seenUrls.set(link.href, {
+                  linkStatus: LinkStatus.NOTOK,
+                  linkError,
+                });
+                reportError(linkError);
+              });
+          }
+
+          getURL(link.href)
+            .then((response) => {
+              let status = response.status;
+              if (status !== 200) {
+                throw new Error(status.toString());
+              }
+              seenUrls.set(link.href, {
+                linkStatus: LinkStatus.OK,
+                linkError: undefined,
+              });
+            })
+            .catch((e) => {
+              let linkError = createError(e, document, idx, position, link);
+              seenUrls.set(link.href, {
+                linkStatus: LinkStatus.NOTOK,
+                linkError,
+              });
+              reportError(linkError);
+            });
+        } else if (seenUrls.get(link.href)?.linkStatus === LinkStatus.NOTOK) {
+          reportError(
+            createError(
+              seenUrls.get(link.href)?.linkError?.e as Error,
+              document,
+              idx,
+              position,
+              link,
+            ),
+          );
+        }
       });
     });
   };
 
   validateLinks();
 };
-const reportError = (
+
+const createError = (
   e: Error,
   document: vscode.TextDocument,
   idx: number,
   position: number,
   link: linkify.FindResultHash,
-) => {
+): LinkError => {
+  return {
+    e,
+    document,
+    idx,
+    position,
+    link,
+  };
+};
+const reportError = (linkError: LinkError) => {
   let severity;
-  if (e.message.includes("Request failed with status code 301")) {
+  if (linkError.e.message.includes("Request failed with status code 301")) {
     severity = vscode.DiagnosticSeverity.Information;
-    e.message = "301 redirect";
-  } else if (e.message === "stale repository") {
+    linkError.e.message = "301 redirect";
+  } else if (linkError.e.message === "stale repository") {
     severity = vscode.DiagnosticSeverity.Warning;
   } else {
     severity = vscode.DiagnosticSeverity.Error;
   }
   let err = new vscode.Diagnostic(
     new vscode.Range(
-      new vscode.Position(idx, position),
-      new vscode.Position(idx, position + link.value.length),
+      new vscode.Position(linkError.idx, linkError.position),
+      new vscode.Position(
+        linkError.idx,
+        linkError.position + linkError.link.value.length,
+      ),
     ),
-    e.message,
+    linkError.e.message,
     severity,
   );
   err.source = "Link Checker";
   gDA.push(err);
-  gDC.set(document.uri, gDA);
+  gDC.set(linkError.document.uri, gDA);
   gContext.subscriptions.push(gDC);
 };
 const getURL = (url: string, options: AxiosRequestConfig = {}) => {

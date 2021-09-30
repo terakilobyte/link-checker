@@ -31,4 +31,9 @@ echo "LINK_CHECKER_TOKEN=<API Key>" >> ~/.zshrc
 
 Initial release of Link Checker.
 
+### 1.1.1
+
+* Now only checks links that begin with http:// and https://
+* Checked links are now tracked and won't be rechecked every save.
+
 **Enjoy!**

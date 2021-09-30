@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { linkCheck } from "./linkCheck";
-const Octokit = require("@octokit/rest");
+const { Octokit } = require("@octokit/rest");
 
 export let gContext: vscode.ExtensionContext;
 export let gDC: vscode.DiagnosticCollection;
