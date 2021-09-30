@@ -31,7 +31,9 @@ export function activate(context: vscode.ExtensionContext) {
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "link-checker" is now active!');
 
-  linkCheck();
+  setTimeout(() => {
+    linkCheck();
+  }, 5000);
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
