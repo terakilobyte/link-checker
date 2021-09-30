@@ -53,7 +53,10 @@ export const linkCheck = () => {
         if (link.type !== "url") {
           return;
         }
-        let position = line.search(link.value);
+        let position = line.indexOf(link.value);
+        if (position < 0) {
+          console.error("negative position", position, link);
+        }
         if (!seenUrls.has(link.href)) {
           seenUrls.set(link.href, {
             linkStatus: LinkStatus.PENDING,
@@ -87,27 +90,27 @@ export const linkCheck = () => {
                 });
                 reportError(linkError);
               });
+          } else {
+            getURL(link.href)
+              .then((response) => {
+                let status = response.status;
+                if (status !== 200) {
+                  throw new Error(status.toString());
+                }
+                seenUrls.set(link.href, {
+                  linkStatus: LinkStatus.OK,
+                  linkError: undefined,
+                });
+              })
+              .catch((e) => {
+                let linkError = createError(e, document, idx, position, link);
+                seenUrls.set(link.href, {
+                  linkStatus: LinkStatus.NOTOK,
+                  linkError,
+                });
+                reportError(linkError);
+              });
           }
-
-          getURL(link.href)
-            .then((response) => {
-              let status = response.status;
-              if (status !== 200) {
-                throw new Error(status.toString());
-              }
-              seenUrls.set(link.href, {
-                linkStatus: LinkStatus.OK,
-                linkError: undefined,
-              });
-            })
-            .catch((e) => {
-              let linkError = createError(e, document, idx, position, link);
-              seenUrls.set(link.href, {
-                linkStatus: LinkStatus.NOTOK,
-                linkError,
-              });
-              reportError(linkError);
-            });
         } else if (seenUrls.get(link.href)?.linkStatus === LinkStatus.NOTOK) {
           reportError(
             createError(
@@ -151,6 +154,9 @@ const reportError = (linkError: LinkError) => {
   } else {
     severity = vscode.DiagnosticSeverity.Error;
   }
+  if (linkError.idx < 0 || linkError.position < 0) {
+    console.error(linkError);
+  }
   let err = new vscode.Diagnostic(
     new vscode.Range(
       new vscode.Position(linkError.idx, linkError.position),
@@ -169,7 +175,7 @@ const reportError = (linkError: LinkError) => {
 };
 const getURL = (url: string, options: AxiosRequestConfig = {}) => {
   if (!options.timeout) {
-    options.maxRedirects = 0;
+    options.maxRedirects = 2;
     options.timeout = 5000;
   }
   const abort = axios.CancelToken.source();
