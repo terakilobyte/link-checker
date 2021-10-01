@@ -1,34 +1,21 @@
 import * as vscode from "vscode";
 import * as linkify from "linkifyjs";
+import { FindResultHash } from "linkifyjs";
 import axios, { AxiosRequestConfig } from "axios";
 import { gDC, ghClient, gContext, infoChannel } from "./extension";
+import { LinkError, LinkResult, LinkStatus } from "./linkStates";
 
 let gDA = Array<vscode.Diagnostic>();
 
-type LinkError = {
-  e: Error;
-  document: vscode.TextDocument;
-  idx: number;
-  position: number;
-  link: linkify.FindResultHash;
-};
-enum LinkStatus {
-  PENDING,
-  OK,
-  NOTOK,
-}
-type LinkResult = {
-  linkStatus: LinkStatus | undefined;
-  linkError: LinkError | undefined;
-};
-
 let seenUrls = new Map<String, LinkResult>();
+const supportedLanguages = ["rst", "restructuredtext", "txt", "markdown", "md"];
 
-export const linkCheck = () => {
-  let config = vscode.workspace.getConfiguration("linkChecker");
-  infoChannel.appendLine(JSON.stringify(config));
-  const document = vscode.window.activeTextEditor?.document;
-  gDC.clear();
+export const linkCheck = (
+  document = vscode.window.activeTextEditor?.document,
+) => {
+  if (!document || !supportedLanguages.includes(document?.languageId)) {
+    return;
+  }
   gDA = Array<vscode.Diagnostic>();
   const validateLinks = () => {
     if (document === undefined) {

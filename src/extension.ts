@@ -12,7 +12,14 @@ export let infoChannel: vscode.OutputChannel;
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  let apiToken = process.env.LINK_CHECKER_TOKEN;
+  let apiToken = vscode.workspace
+    .getConfiguration("linkChecker")
+    .get("linkCheckerToken");
+  if (!apiToken) {
+    vscode.window.showInformationMessage(
+      "Be sure to set your `linkChecker.linkCheckerToken` value in your user settings to avoid Github API rate limiting",
+    );
+  }
   if (!ghClient) {
     ghClient = new Octokit({ auth: apiToken });
   }
@@ -31,9 +38,6 @@ export function activate(context: vscode.ExtensionContext) {
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "link-checker" is now active!');
 
-  setTimeout(() => {
-    linkCheck();
-  }, 5000);
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
@@ -41,16 +45,15 @@ export function activate(context: vscode.ExtensionContext) {
     "extension.link-check",
     () => {
       // The code you place here will be executed every time your command is executed
-      // Display a message box to the user
-      // vscode.window.showInformationMessage("Link Check!");
       linkCheck();
     },
   );
 
   context.subscriptions.push(disposable);
-  vscode.workspace.onDidSaveTextDocument(() => {
-    linkCheck();
-  });
+  vscode.workspace.onDidSaveTextDocument(linkCheck);
+  vscode.workspace.onDidOpenTextDocument(linkCheck);
+  vscode.window.onDidChangeActiveTextEditor((e) => linkCheck(e?.document));
+  linkCheck();
 }
 
 // this method is called when your extension is deactivated
