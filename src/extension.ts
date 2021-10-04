@@ -3,15 +3,15 @@
 import * as vscode from "vscode";
 import { linkCheck } from "./linkCheck";
 const { Octokit } = require("@octokit/rest");
+import { populateRoleMap } from "./roleCheck";
 
-export let gContext: vscode.ExtensionContext;
 export let gDC: vscode.DiagnosticCollection;
 export let ghClient: any;
-export let infoChannel: vscode.OutputChannel;
+export let roleMap: any;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   let apiToken = vscode.workspace
     .getConfiguration("linkChecker")
     .get("linkCheckerToken");
@@ -21,19 +21,16 @@ export function activate(context: vscode.ExtensionContext) {
     );
   }
   if (!ghClient) {
-    ghClient = new Octokit({ auth: apiToken });
+    ghClient = await new Octokit({ auth: apiToken });
   }
-  if (!gContext) {
-    gContext = context;
+  if (!roleMap) {
+    roleMap = await populateRoleMap(ghClient);
   }
   if (!gDC) {
     gDC = vscode.languages.createDiagnosticCollection("link-checker");
   }
 
-  if (!infoChannel) {
-    infoChannel = vscode.window.createOutputChannel("linkChecker");
-  }
-  gContext.subscriptions.push(gDC);
+  context.subscriptions.push(gDC);
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "link-checker" is now active!');
@@ -45,15 +42,21 @@ export function activate(context: vscode.ExtensionContext) {
     "extension.link-check",
     () => {
       // The code you place here will be executed every time your command is executed
-      linkCheck();
+      linkCheck(undefined, ghClient, gDC, context, roleMap);
     },
   );
 
   context.subscriptions.push(disposable);
-  vscode.workspace.onDidSaveTextDocument(linkCheck);
-  vscode.workspace.onDidOpenTextDocument(linkCheck);
-  vscode.window.onDidChangeActiveTextEditor((e) => linkCheck(e?.document));
-  linkCheck();
+  vscode.workspace.onDidSaveTextDocument(() =>
+    linkCheck(undefined, ghClient, gDC, context, roleMap),
+  );
+  vscode.workspace.onDidOpenTextDocument(() =>
+    linkCheck(undefined, ghClient, gDC, context, roleMap),
+  );
+  vscode.window.onDidChangeActiveTextEditor((e) =>
+    linkCheck(e?.document, ghClient, gDC, context, roleMap),
+  );
+  linkCheck(undefined, ghClient, gDC, context, roleMap);
 }
 
 // this method is called when your extension is deactivated

@@ -5,7 +5,8 @@ status and for repository freshness.
 
 ## Features
 
-Automatically check links for their response code, and in the case of Github repositories, their freshness.
+Automatically check links for their response code, and in the case of Github repositories, their freshness. Created for authoring docs at MongoDB, it will
+also check links in `:roles:` using the latest **release**.
 
 ![link-checking](images/link-checking.png)
 
@@ -35,5 +36,11 @@ Initial release of Link Checker.
 
 * Now only checks links that begin with http:// and https://
 * Checked links are now tracked and won't be rechecked every save.
+
+### 1.2.0
+
+* Now consults `rstspec.toml` for role resolution and validates links using `:roles:`.
+  It pulls role information from the latest **release**.
+* Roles resolved with an extra slash will be reported in warnings.
 
 **Enjoy!**

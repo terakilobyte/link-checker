@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
 import * as linkify from "linkifyjs";
-import { FindResultHash } from "linkifyjs";
+// import { FindResultHash } from "linkifyjs";
 import axios, { AxiosRequestConfig } from "axios";
-import { gDC, ghClient, gContext, infoChannel } from "./extension";
 import { LinkError, LinkResult, LinkStatus } from "./linkStates";
 
 let gDA = Array<vscode.Diagnostic>();
@@ -12,6 +11,10 @@ const supportedLanguages = ["rst", "restructuredtext", "txt", "markdown", "md"];
 
 export const linkCheck = (
   document = vscode.window.activeTextEditor?.document,
+  ghClient: any,
+  gDC: vscode.DiagnosticCollection,
+  context: vscode.ExtensionContext,
+  roleMap: any,
 ) => {
   if (!document || !supportedLanguages.includes(document?.languageId)) {
     return;
@@ -29,8 +32,40 @@ export const linkCheck = (
     text.forEach((line, idx) => {
       let links = Array<linkify.FindResultHash>();
       let rstMatches = line.match(/<(.*)>`_/);
+      let roleMatches = line.match(/:(.*):`.*<(.*)>`/);
       if (rstMatches && rstMatches.length === 2) {
         links.push({ type: "url", value: rstMatches[1], href: rstMatches[1] });
+      } else if (
+        roleMatches &&
+        roleMatches.length === 3 &&
+        roleMap[roleMatches[1]] &&
+        roleMap[roleMatches[1]].type &&
+        roleMap[roleMatches[1]].type.link
+      ) {
+        let href: string = roleMap[roleMatches[1]].type.link.replace(
+          "%s",
+          roleMatches[2],
+        );
+        links.push({
+          type: "url",
+          value: roleMatches[0],
+          href,
+        });
+        let doubleSlashMatches = href.match(/https?:\/\/.*(\/\/).*/);
+        if (doubleSlashMatches && doubleSlashMatches.length === 2) {
+          reportError(
+            createError(
+              new Error(`It looks like you've added an extra '/'.
+URL: ${href}`),
+              document,
+              idx,
+              line.indexOf(roleMatches[0]),
+              { type: "url", value: roleMatches[0], href },
+            ),
+            gDC,
+            context,
+          );
+        }
       } else {
         links = linkify
           .find(line)
@@ -41,9 +76,7 @@ export const linkCheck = (
           return;
         }
         let position = line.indexOf(link.value);
-        if (position < 0) {
-          console.error("negative position", position, link);
-        }
+
         if (!seenUrls.has(link.href)) {
           seenUrls.set(link.href, {
             linkStatus: LinkStatus.PENDING,
@@ -75,14 +108,21 @@ export const linkCheck = (
                   linkStatus: LinkStatus.NOTOK,
                   linkError,
                 });
-                reportError(linkError);
+                reportError(linkError, gDC, context);
               });
           } else {
-            getURL(link.href)
+            getURL(link)
               .then((response) => {
                 let status = response.status;
                 if (status !== 200) {
-                  throw new Error(status.toString());
+                  console.log(
+                    `Throwing an error with link ${link.value} and ${link.href}`,
+                  );
+                  throw new Error(
+                    `${link.value} with a url of ${
+                      link.href
+                    } failed with ${status.toString()}`,
+                  );
                 }
                 seenUrls.set(link.href, {
                   linkStatus: LinkStatus.OK,
@@ -95,7 +135,7 @@ export const linkCheck = (
                   linkStatus: LinkStatus.NOTOK,
                   linkError,
                 });
-                reportError(linkError);
+                reportError(linkError, gDC, context);
               });
           }
         } else if (seenUrls.get(link.href)?.linkStatus === LinkStatus.NOTOK) {
@@ -107,6 +147,8 @@ export const linkCheck = (
               position,
               link,
             ),
+            gDC,
+            context,
           );
         }
       });
@@ -131,11 +173,20 @@ const createError = (
     link,
   };
 };
-const reportError = (linkError: LinkError) => {
+const reportError = (
+  linkError: LinkError,
+  gDC: vscode.DiagnosticCollection,
+  context: vscode.ExtensionContext,
+) => {
   let severity;
   if (linkError.e.message.includes("Request failed with status code 301")) {
     severity = vscode.DiagnosticSeverity.Information;
     linkError.e.message = "301 redirect";
+  } else if (
+    linkError.e.message.includes("It looks like you've added an extra '/'")
+  ) {
+    console.log("DOUBLE SLASH ERROR", linkError.e.message);
+    severity = vscode.DiagnosticSeverity.Warning;
   } else if (linkError.e.message === "stale repository") {
     severity = vscode.DiagnosticSeverity.Warning;
   } else {
@@ -158,9 +209,12 @@ const reportError = (linkError: LinkError) => {
   err.source = "Link Checker";
   gDA.push(err);
   gDC.set(linkError.document.uri, gDA);
-  gContext.subscriptions.push(gDC);
+  context.subscriptions.push(gDC);
 };
-const getURL = (url: string, options: AxiosRequestConfig = {}) => {
+const getURL = (
+  link: linkify.FindResultHash,
+  options: AxiosRequestConfig = {},
+) => {
   if (!options.timeout) {
     options.maxRedirects = 2;
     options.timeout = 5000;
@@ -171,9 +225,16 @@ const getURL = (url: string, options: AxiosRequestConfig = {}) => {
     options.timeout,
   );
   return axios
-    .get(url, { cancelToken: abort.token, ...options })
+    .get(link.href, { cancelToken: abort.token, ...options })
     .then((res) => {
       clearTimeout(id);
       return res;
+    })
+    .catch((e) => {
+      throw new Error(
+        `${link.value} failed.
+URL: ${link.href}
+${e.toString()}`,
+      );
     });
 };

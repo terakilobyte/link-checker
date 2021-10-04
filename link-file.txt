@@ -10,11 +10,6 @@ Community Libraries
 .. list-table::
    :class: striped
 
-  // but is it?
-  https://www.ajsdfi.bizz
-
-   https://www.flibberyasdifgj.com
-
    https://www.google.comasdf
 
    // a code comment
@@ -24,6 +19,11 @@ Community Libraries
    http://a.bad.url
 
    https://www.fjasdlkj.com
+
+
+   :node-api:`foo </AggregationCursor.html>`
+   :node-api:`foo <AggregationCursorz.html>`
+   :node-api:`foo <AggregationCursor.html>`
 
 
 
