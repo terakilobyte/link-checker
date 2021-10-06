@@ -1,4 +1,4 @@
-const TOML = require("@iarna/toml");
+import { parse } from "@iarna/toml";
 
 const owner = "mongodb";
 const repo = "snooty-parser";
@@ -16,8 +16,8 @@ export const populateRoleMap = async (ghClient: any) => {
       ref,
     },
   );
-  const toml = TOML.parse(
-    new Buffer(content.data.content, "base64").toString("utf8"),
+  const toml = parse(
+    Buffer.from(content.data.content, "base64").toString("utf8"),
   );
   return toml.role;
 };

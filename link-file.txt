@@ -10,20 +10,22 @@ Community Libraries
 .. list-table::
    :class: striped
 
-   https://www.google.comasdf
-
    // a code comment
 
    // another comment
 
    http://a.bad.url
 
-   https://www.fjasdlkj.com
 
 
    :node-api:`foo </AggregationCursor.html>`
    :node-api:`foo <AggregationCursorz.html>`
    :node-api:`foo <AggregationCursor.html>`
+   This is a `constant link that should work <{+api+}/mongo#WriteError>`__
+   This is a `constant link that should fail <{+api+}/flibbertypoo>`__
+   This is a :ref:`valid atlas ref <connect-to-your-cluster>`
+   This is a :ref:`valid server ref <replica-set-read-preference-behavior>`
+   This is an :ref:`invalid ref <flibbertypie>`
 
 
 

@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import * as linkify from "linkifyjs";
-// import { FindResultHash } from "linkifyjs";
 import axios, { AxiosRequestConfig } from "axios";
 import { LinkError, LinkResult, LinkStatus } from "./linkStates";
+import { link } from "fs";
 
 let gDA = Array<vscode.Diagnostic>();
 
@@ -15,6 +15,8 @@ export const linkCheck = (
   gDC: vscode.DiagnosticCollection,
   context: vscode.ExtensionContext,
   roleMap: any,
+  refMap: any,
+  constantMap: any,
 ) => {
   if (!document || !supportedLanguages.includes(document?.languageId)) {
     return;
@@ -33,8 +35,28 @@ export const linkCheck = (
       let links = Array<linkify.FindResultHash>();
       let rstMatches = line.match(/<(.*)>`_/);
       let roleMatches = line.match(/:(.*):`.*<(.*)>`/);
-      if (rstMatches && rstMatches.length === 2) {
-        links.push({ type: "url", value: rstMatches[1], href: rstMatches[1] });
+      let refMatches = line.match(/:ref:.*<(.*)>`/);
+      if (rstMatches) {
+        // check for constant links
+        let constMatch = rstMatches[1].match(/\{\+(.*)\+\}/);
+        if (constMatch) {
+          let href =
+            constantMap[constMatch[1]] +
+            rstMatches[1].slice(constMatch[0].length);
+          console.log("CONSTANT VALUE", rstMatches[1]);
+          console.log("CONSTANT HREF", href);
+          links.push({
+            type: "url",
+            value: rstMatches[1],
+            href,
+          });
+        } else {
+          links.push({
+            type: "url",
+            value: rstMatches[1],
+            href: rstMatches[1],
+          });
+        }
       } else if (
         roleMatches &&
         roleMatches.length === 3 &&
@@ -65,6 +87,41 @@ URL: ${href}`),
             gDC,
             context,
           );
+        }
+      } else if (refMatches) {
+        if (!refMap[refMatches[1]]) {
+          reportError(
+            createError(
+              new Error("Ref not found. Local refs are currently unsupported"),
+              document,
+              idx,
+              line.indexOf(refMatches[0]),
+              { type: "url", value: refMatches[0], href: "" },
+            ),
+            gDC,
+            context,
+          );
+        } else {
+          reportError(
+            createError(
+              new Error(`ref resolved: ${refMap[refMatches[1]]}`),
+              document,
+              idx,
+              line.indexOf(refMatches[1]),
+              {
+                type: "url",
+                value: refMatches[0],
+                href: refMap[refMatches[1]],
+              },
+            ),
+            gDC,
+            context,
+          );
+          links.push({
+            type: "url",
+            value: refMatches[1],
+            href: refMap[refMatches[1]],
+          });
         }
       } else {
         links = linkify
@@ -115,9 +172,6 @@ URL: ${href}`),
               .then((response) => {
                 let status = response.status;
                 if (status !== 200) {
-                  console.log(
-                    `Throwing an error with link ${link.value} and ${link.href}`,
-                  );
                   throw new Error(
                     `${link.value} with a url of ${
                       link.href
@@ -185,10 +239,14 @@ const reportError = (
   } else if (
     linkError.e.message.includes("It looks like you've added an extra '/'")
   ) {
-    console.log("DOUBLE SLASH ERROR", linkError.e.message);
     severity = vscode.DiagnosticSeverity.Warning;
   } else if (linkError.e.message === "stale repository") {
     severity = vscode.DiagnosticSeverity.Warning;
+  } else if (linkError.e.message.includes("Ref not found")) {
+    severity = vscode.DiagnosticSeverity.Warning;
+  } else if (linkError.e.message.includes("ref resolved:")) {
+    linkError.e.message = linkError.e.message.slice("ref resolved: ".length);
+    severity = vscode.DiagnosticSeverity.Information;
   } else {
     severity = vscode.DiagnosticSeverity.Error;
   }
