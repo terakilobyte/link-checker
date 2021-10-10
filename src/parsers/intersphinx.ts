@@ -11,24 +11,7 @@ import axios from "axios";
  * display will be ignored
  */
 
-type refMap = { [key: string]: any };
-export async function populateRefs(
-  url: string,
-  referenceMap: refMap = {},
-): Promise<refMap> {
-  let refs = await fetchInvFile(url);
-  let source = url.slice(0, url.indexOf("objects.inv"));
-  return refs.split("\n").reduce((acc, line) => {
-    let [name, _role, _priority, url, ..._display] = line.split(" ");
-    if (!name) {
-      return acc;
-    }
-    acc[name] = source + url;
-    return acc;
-  }, referenceMap);
-}
-
-async function fetchInvFile(url: string): Promise<string> {
+export default async function fetchInvFile(url: string): Promise<string> {
   let res = await axios.get(url, { responseType: "arraybuffer" });
   return await inflateInvFile(res.data);
 }

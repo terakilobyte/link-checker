@@ -1,12 +1,10 @@
-import { TextDocument } from "vscode";
-import { FindResultHash } from "linkifyjs";
+import { Uri } from "vscode";
+import { LinkFindResult } from "./linkCheck";
 
 export type LinkError = {
   e: Error;
-  document: TextDocument;
-  idx: number;
-  position: number;
-  link: FindResultHash;
+  uri: Uri;
+  link: LinkFindResult;
 };
 export enum LinkStatus {
   PENDING,

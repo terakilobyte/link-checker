@@ -16,6 +16,8 @@ Community Libraries
 
    http://a.bad.url
 
+   [some markdown link](https://www.google.com)
+   [some other link](https://a.bad.url)
 
 
    :node-api:`foo </AggregationCursor.html>`
