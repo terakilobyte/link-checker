@@ -14,6 +14,8 @@ import ConstantsProvider from "./providers/Constants";
 import ReferencesProvider from "./providers/References";
 import RSTProvider from "./providers/RST";
 
+import { getLocalRefs } from "./parsers/localRefParser";
+
 let gDC: DiagnosticCollection;
 
 const constants = new ConstantsProvider();
@@ -33,6 +35,7 @@ const documentSelector = [
 ];
 
 export async function activate(context: ExtensionContext) {
+  await getLocalRefs();
   let apiToken = workspace
     .getConfiguration("linkChecker")
     .get("linkCheckerToken");

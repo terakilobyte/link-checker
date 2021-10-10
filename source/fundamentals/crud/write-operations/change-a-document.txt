@@ -1,0 +1,200 @@
+=================
+Change a Document
+=================
+
+.. default-domain:: mongodb
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+Overview
+--------
+
+You can change documents in a MongoDB collection using two distinct
+operation types: **update** and **replace**. Update operations mutate
+specified fields in one or more documents and leave other fields and values
+unchanged. Replace operations remove all existing fields in one or more
+documents and substitute them with specified fields and values.
+
+.. _updateDocuments:
+
+Update
+------
+
+To perform an update to one or more documents, create an **update
+document** that specifies the **update operator** (the type of update to
+perform) and the fields and values that describe the change. Update
+documents use the following format:
+
+.. code-block:: javascript
+
+   {
+      <update operator>: {
+         <field> : {
+            ...
+         },
+         <field> : {
+         }
+      },
+      <update operator>: {
+         ...
+      }
+   }
+
+The top level of an update document contains one or more of the following
+update operators:
+
+- ``$set`` - replaces the value of a field with a specified one
+- ``$inc`` - increments or decrements field values
+- ``$rename`` - renames fields
+- ``$unset`` - removes fields
+- ``$mul`` - multiplies a field value by a specified number
+
+See the MongoDB server manual for a :manual:`complete list of update operators
+and their usage </reference/operator/update-field/>`.
+
+The update operators apply only to the fields associated with them in your
+update document.
+
+.. note:: Aggregation Pipelines in Update Operations
+
+   If you are using MongoDB Version 4.2 or later, you can use aggregation
+   pipelines made up of a subset of aggregation stages in update operations. For
+   more information on the aggregation stages MongoDB supports in
+   aggregation pipelines used in update operations, see our tutorial on building
+   :manual:`updates with aggregation pipelines </tutorial/update-documents-with-aggregation-pipeline/>`. 
+
+
+Example
+~~~~~~~
+
+Consider a document of fields containing the English alphabet of lowercase
+letters ``a`` through ``z`` and their ordinal values:
+
+.. code-block:: javascript
+
+   {
+      _id: 465,
+      a: 1,
+      b: 2,
+      c: 3,
+      ...
+      y: 25,
+      z: 26,
+   }
+
+If you apply the ``$set`` update operator with a specified value for ``z``, 
+your update operation might resemble the following:
+
+.. code-block:: javascript
+
+   const filter = { _id: 465 };
+   // update the value of the 'z' field to 42
+   const updateDocument = {
+      $set: {
+         z: 42,
+      },
+   };
+   const result = await collection.updateOne(filter, updateDocument);
+
+The updated document resembles the following, with an an updated value in
+the ``z`` field and all other values unchanged:
+
+.. code-block:: javascript
+   :copyable: false
+
+   {
+      _id: 465,
+      a: 1,
+      ...
+      y: 25,
+      z: 42,
+   }
+
+If an update operation fails to match any documents in a collection, it
+does not make any changes. Update operations can be configured to perform
+an :doc:`upsert </fundamentals/crud/write-operations/upsert>` which
+attempts to perform an update, but if no documents are matched, inserts
+a new document.
+
+You cannot modify the ``_id`` field of a document nor change a field to
+a value that violates a unique index constraint. See the MongoDB server manual 
+for more information on :manual:`unique indexes </core/index-unique/>`.
+
+.. _replacementDocument:
+
+Replace
+-------
+
+To perform a replacement operation, create a **replacement document** that
+consists of the fields and values that you would like to insert in your
+**replace** operation. Replacement documents use the following format:
+
+.. code-block:: javascript
+
+   {
+      <field>: {
+         <value>
+      },
+      <field>: {
+         ...
+      }
+   }
+
+Replacement documents are the documents that you want to take the place of
+existing documents that match the query filters.
+
+Example
+~~~~~~~
+
+Consider a document of fields containing the English alphabet of lowercase
+letters ``a`` through ``z`` and their ordinal values:
+
+.. code-block:: javascript
+
+   {
+      _id: 465,
+      a: 1,
+      b: 2,
+      c: 3,
+      ...
+      y: 25,
+      z: 26,
+   }
+
+Suppose you wanted to replace this document with one that contains only
+the field ``z`` with a value of ``42``. Your replacement operation might
+resemble the following:
+
+.. code-block:: javascript
+
+   const filter = { _id: 465 };
+   // replace the matched document with the replacement document
+   const replacementDocument = {
+      z: 42,
+   };
+   const result = await collection.replaceOne(filter, replacementDocument);
+
+The replaced document contains the contents of the replacement document
+and the immutable ``_id`` field as follows:
+
+.. code-block:: javascript
+   :copyable: false
+
+   {
+      _id: 465,
+      z: 42,
+   }
+
+If a replace operation fails to match any documents in a collection, it
+does not make any changes. Replace operations can be configured to perform
+an :doc:`upsert </fundamentals/crud/write-operations/upsert>` which
+attempts to perform the replacement, but if no documents are matched, it
+inserts a new document.
+
+You cannot modify the ``_id`` field of a document nor change a field to
+a value that violates a unique index constraint. See the MongoDB server manual
+for more information on :manual:`unique indexes </core/index-unique/>`.

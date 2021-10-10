@@ -1,0 +1,79 @@
+===============
+Count Documents
+===============
+
+.. default-domain:: mongodb
+
+.. note::
+   If you specify a callback method, ``countDocuments()`` and
+   ``estimatedDocumentCount()`` return nothing. If you do not specify one,
+   this method returns a ``Promise`` that resolves to the result object
+   when it completes. See our guide on :doc:`Promises and Callbacks
+   </fundamentals/promises>` for more information, or the
+   `API documentation <{+api+}/classes/Collection.html#count>`__ for
+   information on the result object.
+
+The Node.js driver provides two methods for counting documents in a
+collection:
+
+- `collection.countDocuments() <{+api+}/classes/Collection.html#countDocuments>`__ returns the number of documents in
+  the collection that match the specified query. If you specify an empty
+  query document, ``countDocuments()`` returns the total number of
+  documents in the collection.
+
+- `collection.estimatedDocumentCount() <{+api+}/classes/Collection.html#estimatedDocumentCount>`__ returns an
+  **estimation** of the number of documents in the collection based on
+  collection metadata.
+
+``estimatedDocumentCount()`` is faster than ``countDocuments()`` because
+the estimation uses the collection's metadata rather than scanning the
+collection. In contrast, ``countDocuments()`` takes longer to return, but
+provides an **accurate** count of the number of documents and supports
+specifying a filter. Choose the appropriate method for your workload.
+
+To specify which documents you wish to count, ``countDocuments()``
+accepts a :doc:`query </fundamentals/crud/query-document>` parameter.
+``countDocuments()`` counts the documents that match the specified query.
+
+``countDocuments()`` and ``estimatedDocumentCount()`` support optional
+settings that affect the method's execution. Refer to the reference
+documentation for each method for more information.
+
+Example
+-------
+
+The following example estimates the number of documents in the
+``movies`` collection in the ``sample_mflix`` database, and then returns
+an accurate count of the number of documents in the ``movies``
+collection with ``Canada`` in the ``countries`` field.
+
+.. include:: /includes/connect-guide-note.rst
+
+.. tabs::
+
+  .. tab:: JavaScript
+     :tabid: javascript
+
+     .. literalinclude:: /code-snippets/usage-examples/count.js
+        :language: javascript
+        :linenos:
+
+  .. tab:: TypeScript
+     :tabid: typescript
+
+     .. literalinclude:: /code-snippets/usage-examples/count.js
+        :language: javascript
+        :linenos:
+
+.. note:: Identical Code Snippets
+
+   The JavaScript and TypeScript code snippets above are identical. There are no
+   TypeScript specific features of the driver relevant to this use case.
+
+If you run the preceding sample code, you should see the following output:
+
+.. code-block:: none
+   :copyable: false
+
+   Estimated number of documents in the movies collection: 23541
+   Number of movies from Canada: 1349

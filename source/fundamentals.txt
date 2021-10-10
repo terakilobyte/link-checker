@@ -1,0 +1,23 @@
+============
+Fundamentals
+============
+
+.. default-domain:: mongodb
+
+.. toctree::
+
+   /fundamentals/connection
+   /fundamentals/versioned-api
+   /fundamentals/authentication
+   /fundamentals/crud
+   /fundamentals/promises
+   /fundamentals/aggregation
+   /fundamentals/indexes
+   /fundamentals/collations
+   /fundamentals/logging
+   /fundamentals/monitoring
+   /fundamentals/gridfs
+   /fundamentals/time-series
+   /fundamentals/typescript
+
+.. include:: /includes/fundamentals-sections.rst

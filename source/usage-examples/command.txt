@@ -1,0 +1,69 @@
+=============
+Run a Command
+=============
+
+.. default-domain:: mongodb
+
+.. note::
+   If you specify a callback method, ``command()`` returns nothing. If you do
+   not specify one, this method returns a ``Promise`` that resolves to the
+   result object when it completes. See our guide on :doc:`Promises and
+   Callbacks </fundamentals/promises>` for more information, or the
+   `API documentation <{+api+}/classes/Db.html>`__ for
+   information on the result object.
+
+You can run all raw database operations using the
+`db.command() <{+api+}/classes/Db.html#command>`__ method. Call the ``command()`` method with
+your command object on an instance of a database for diagnostic and
+administrative tasks such as fetching server stats or initializing a replica
+set.
+
+.. note::
+    Use the :manual:`mongo shell </reference/mongo-shell>` for
+    administrative tasks instead of the Node.js driver whenever possible.
+
+You can specify additional options in the ``options`` object passed in
+the second parameter of the ``command()`` method. For more information
+on the options you can pass, see the
+`db.command() API documentation <{+api+}/classes/Db.html#command>`__. You can
+also pass a `callback method <{+api+}/classes/Admin.html>`__ as an
+optional third parameter.
+
+Example
+-------
+
+.. include:: /includes/connect-guide-note.rst
+
+.. tabs::
+
+  .. tab:: JavaScript
+     :tabid: javascript
+
+     .. literalinclude:: /code-snippets/usage-examples/command.js
+        :language: javascript
+        :linenos:
+
+  .. tab:: TypeScript
+     :tabid: typescript
+
+     .. literalinclude:: /code-snippets/usage-examples/command.js
+        :language: javascript
+        :linenos:
+
+.. note:: Identical Code Snippets
+
+   The JavaScript and TypeScript code snippets above are identical. There are no
+   TypeScript specific features of the driver relevant to this use case.
+
+When you run the preceding command, you should see the following output:
+
+.. code-block:: javascript
+   :copyable: false
+
+   {
+     db: 'sample_mflix',
+     collections: 6,
+     views: 0,
+     objects: 75620,
+     ...
+   }

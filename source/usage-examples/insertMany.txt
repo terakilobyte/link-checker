@@ -1,0 +1,54 @@
+=========================
+Insert Multiple Documents
+=========================
+
+.. default-domain:: mongodb
+
+.. note::
+   If you specify a callback method, ``insertMany()`` returns nothing. If you
+   do not specify one, this method returns a ``Promise`` that resolves to the
+   result object when it completes. See our guide on :doc:`Promises and
+   Callbacks </fundamentals/promises>` for more information, or the
+   `API documentation <{+api+}/interfaces/InsertManyResult.html>`__ for
+   information on the result object.
+
+You can insert multiple documents using the
+`collection.insertMany() <{+api+}/classes/Collection.html#insertMany>`__ method. The ``insertMany()`` takes an array
+of documents to insert into the specified collection.
+
+You can specify additional options in the ``options`` object passed as the
+second parameter of the ``insertMany()`` method. Specify ``ordered:true``
+to prevent inserting the remaining documents if the insertion failed for a
+previous document in the array.
+
+Specifying incorrect parameters for your ``insertMany()`` operation can
+cause problems. Attempting to insert a field to a value that would violate
+unique index rules will throw a ``duplicate key error``.
+
+Example
+-------
+
+.. include:: /includes/connect-guide-note.rst
+
+.. tabs::
+
+   .. tab:: JavaScript
+      :tabid: javascript
+
+      .. literalinclude:: /code-snippets/usage-examples/insertMany.js
+         :language: javascript
+         :linenos:
+
+   .. tab:: TypeScript
+      :tabid: typescript
+
+      .. literalinclude:: /code-snippets/usage-examples/insertMany.ts
+         :language: typescript
+         :linenos:
+
+If you run the preceding example, you should see the following output:
+
+.. code-block:: none
+   :copyable: false
+
+   3 documents were inserted
