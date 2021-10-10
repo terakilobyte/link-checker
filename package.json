@@ -67,9 +67,7 @@
 	},
 	"dependencies": {
 		"@iarna/toml": "^2.2.5",
-		"@octokit/rest": "^16.41.1",
 		"axios": "^0.21.2",
-		"esbuild": "^0.13.3",
-		"linkifyjs": "^2.1.9"
+		"esbuild": "^0.13.3"
 	}
 }
