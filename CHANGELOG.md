@@ -24,3 +24,8 @@ Initial release of Link Checker.
 * Fetches intersphinx files from `snooty.toml` and checks refs. Local ref checking
   is not supported at this time.
 * Checks constants that represent urls Initial release
+
+## 1.4.0
+
+* :ref:, :role:, and {+constant+} links are now clickable
+* Major internal refactor. The size of the extension has now been shrunk to < 90kb

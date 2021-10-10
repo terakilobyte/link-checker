@@ -2,7 +2,7 @@
 	"name": "link-checker",
 	"displayName": "Link Checker",
 	"description": "Checks links for 200 OK and, in the case of Github, repository staleness. Will check links resolved in rST roles if you work for MongoDB.",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
