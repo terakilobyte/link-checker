@@ -1,8 +1,8 @@
 import { TextDocument, DocumentLink, Range, Uri } from "vscode";
-import fetchInvFile from "../parsers/intersphinx";
-import readSnootyToml from "../parsers/snootyToml";
+import fetchInvFile from "../parsers/intersphinxParser";
+import readSnootyToml from "../parsers/snootyTomlParser";
 import { DefaultProvider, parseResult } from "./Default";
-import { populateRoleMap } from "../parsers/roles";
+import { populateRoleMap } from "../parsers/rolesParser";
 
 type refMap = { [key: string]: any };
 

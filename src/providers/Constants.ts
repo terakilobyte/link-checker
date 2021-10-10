@@ -1,7 +1,7 @@
 import { TextDocument, DocumentLink, Range, Uri } from "vscode";
 import { DefaultProvider, parseResult } from "./Default";
-import readConstants from "../parsers/constants";
-import readSnootyToml from "../parsers/snootyToml";
+import readConstants from "../parsers/constantsParser";
+import readSnootyToml from "../parsers/snootyTomlParser";
 
 export default class ConstantsProvider extends DefaultProvider {
   regex: RegExp;
