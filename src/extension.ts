@@ -1,6 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { readdirSync } from "fs";
+import { promises as fs } from "fs";
 import {
   DiagnosticCollection,
   ExtensionContext,
@@ -50,7 +50,10 @@ export async function activate(context: ExtensionContext) {
   let snootyTomlFound = false;
   // don't activate additional format support if there is no snooty
   for (let folder of workspace.workspaceFolders || []) {
-    if (readdirSync(folder.uri.fsPath).includes("snooty.toml")) {
+    let dirContents = await fs
+      .readdir(folder.uri.fsPath)
+      .catch(() => [] as string[]);
+    if (dirContents.includes("snooty.toml")) {
       await getLocalRefs();
       await constants.loadDictionary();
       await references.loadDictionary();

@@ -7,7 +7,9 @@ let refs: { [key: string]: any };
 export async function getLocalRefs() {
   if (!refs) {
     for (let folder of workspace.workspaceFolders || []) {
-      const dirContents = await fs.readdir(folder.uri.fsPath);
+      const dirContents = await fs
+        .readdir(folder.uri.fsPath)
+        .catch(() => [] as string[]);
       if (dirContents.includes("snooty.toml")) {
         refs = await crawl(join(folder.uri.fsPath, "source"));
       }
@@ -17,7 +19,7 @@ export async function getLocalRefs() {
 }
 
 async function crawl(path: string): Promise<{ [key: string]: any }> {
-  const dirContents = await fs.readdir(path);
+  const dirContents = await fs.readdir(path).catch(() => [] as string[]);
   let refs: { [key: string]: any } = {};
   for (let file of dirContents) {
     if ([".txt", ".rst"].includes(extname(file))) {
