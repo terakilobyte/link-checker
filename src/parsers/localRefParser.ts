@@ -1,5 +1,5 @@
 import { Uri, workspace } from "vscode";
-import { promises as fs } from "fs";
+import { lstatSync, promises as fs } from "fs";
 import { join, extname } from "path";
 
 let refs: { [key: string]: any };
@@ -7,11 +7,13 @@ let refs: { [key: string]: any };
 export async function getLocalRefs() {
   if (!refs) {
     for (let folder of workspace.workspaceFolders || []) {
-      const dirContents = await fs
-        .readdir(folder.uri.fsPath)
-        .catch(() => [] as string[]);
-      if (dirContents.includes("snooty.toml")) {
-        refs = await crawl(join(folder.uri.fsPath, "source"));
+      if ((await fs.lstat(folder.uri.fsPath)).isDirectory()) {
+        const dirContents = await fs
+          .readdir(folder.uri.fsPath)
+          .catch(() => [] as string[]);
+        if (dirContents.includes("snooty.toml")) {
+          refs = await crawl(join(folder.uri.fsPath, "source"));
+        }
       }
     }
   }
@@ -19,13 +21,21 @@ export async function getLocalRefs() {
 }
 
 async function crawl(path: string): Promise<{ [key: string]: any }> {
-  const dirContents = await fs.readdir(path).catch(() => [] as string[]);
   let refs: { [key: string]: any } = {};
-  for (let file of dirContents) {
-    if ([".txt", ".rst"].includes(extname(file))) {
-      refs = { ...refs, ...(await extractRefs(join(path, file))) };
-    } else if (file !== "node_modules") {
-      refs = { ...refs, ...(await crawl(join(path, file))) };
+  if (lstatSync(path).isDirectory()) {
+    const dirContents = await fs.readdir(path).catch(() => [] as string[]);
+    for (let file of dirContents) {
+      if (
+        (await fs.lstat(join(path, file))).isDirectory() &&
+        file !== "node_modules"
+      ) {
+        refs = { ...refs, ...(await crawl(join(path, file))) };
+      } else if (
+        (await fs.lstat(join(path, file))).isFile() &&
+        [".txt", ".rst"].includes(extname(file))
+      ) {
+        refs = { ...refs, ...(await extractRefs(join(path, file))) };
+      }
     }
   }
   return refs;

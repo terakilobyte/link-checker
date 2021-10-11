@@ -10,7 +10,6 @@ export default async function readSnootyToml(): Promise<any> {
     return snootyToml;
   }
   for (let folder of workspace.workspaceFolders || []) {
-    console.log(folder);
     const dirContents = await fs
       .readdir(folder.uri.fsPath)
       .catch(() => [] as string[]);
