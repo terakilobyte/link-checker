@@ -89,8 +89,8 @@ export default class ReferencesProvider extends DefaultProvider {
             match.index + match[0].indexOf(match[2]) + match[2].length,
           ),
         );
-        let href = "https://a.bad.ref";
         let value = match[2];
+        let href = `https://no.${value}.was.found`;
         results.push({
           value,
           range,
