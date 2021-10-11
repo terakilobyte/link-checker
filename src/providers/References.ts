@@ -4,6 +4,7 @@ import readSnootyToml from "../parsers/snootyTomlParser";
 import { DefaultProvider, parseResult } from "./Default";
 import { populateRoleMap } from "../parsers/rolesParser";
 import { getLocalRefs } from "../parsers/localRefParser";
+import assert = require("assert");
 
 type refMap = { [key: string]: any };
 
@@ -121,6 +122,12 @@ export default class ReferencesProvider extends DefaultProvider {
           href,
         });
       }
+    }
+
+    let refDeclarationRegex = /\.\.\s_([\w\d\-_=+!@#$%^&*(\)]*):/g;
+    while ((match = refDeclarationRegex.exec(document.getText())) !== null) {
+      assert(this.dictionary);
+      this.dictionary[match[1]] = Uri.file(document.uri.fsPath);
     }
     return results;
   }
