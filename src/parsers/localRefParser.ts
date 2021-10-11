@@ -44,7 +44,7 @@ async function crawl(path: string): Promise<{ [key: string]: any }> {
 async function extractRefs(path: string) {
   let refs: { [key: string]: any } = {};
   const file = await fs.readFile(path, "utf8");
-  const regex = /^\.\.\s_(.*):$/g;
+  const regex = /\.\.\s_(.*):/g;
   let lines = file.split("\n");
   lines.forEach((line, index) => {
     let matches = regex.exec(line);
