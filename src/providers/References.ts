@@ -60,9 +60,13 @@ export default class ReferencesProvider extends DefaultProvider {
         let value = match[whichMatch];
         let href = this.dictionary[match[whichMatch]];
         let range = new Range(
-          document.positionAt(match.index + match[0].indexOf(match[3])),
           document.positionAt(
-            match.index + match[0].indexOf(match[3]) + match[3].length,
+            match.index + match[0].indexOf(match[whichMatch]),
+          ),
+          document.positionAt(
+            match.index +
+              match[0].indexOf(match[whichMatch]) +
+              match[whichMatch].length,
           ),
         );
         results.push({
