@@ -1,10 +1,7 @@
-name = "golang"
-title = "Go"
-toc_landing_pages = [
-    "/fundamentals/connection",
-    "/fundamentals/crud",
-    "/usage-examples"
-]
+name = "node"
+title = "Node.js"
+
+toc_landing_pages = ["/fundamentals/authentication", "/fundamentals", "/fundamentals/crud", "/usage-examples"]
 
 intersphinx = [
   "https://docs.mongodb.com/manual/objects.inv",
@@ -12,7 +9,8 @@ intersphinx = [
 ]
 
 [constants]
-docs-branch = "master" # always set this to the docs branch (i.e. master, 1.7, 1.8, etc.)
-version = "v1.7.2" # always set this to the driver branch (i.e. v1.7.0, v1.8.0, etc.)
-example = "https://raw.githubusercontent.com/mongodb/docs-golang/{+docs-branch+}/source/includes/usage-examples/code-snippets"
-api = "https://pkg.go.dev/go.mongodb.org/mongo-driver@{+version+}"
+version = 4.1
+package-name-org = "mongodb-org"
+pgp-version = "{+version+}"
+api = "https://mongodb.github.io/node-mongodb-native/{+version+}"
+mongosh = "``mongosh``"

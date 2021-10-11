@@ -1,9 +1,11 @@
 export default function readConstants(constantMap: any) {
   return Object.keys(constantMap).reduce(
     (acc: { [key: string]: any }, curr) => {
-      let constMatch = constantMap[curr].match(/\{\+(.*)\+\}/);
-      if (constMatch) {
-        acc[curr] = replaceConstantsInString(constantMap[curr], constantMap);
+      if (typeof constantMap[curr] === "string") {
+        let constMatch = constantMap[curr].match(/\{\+(.*)\+\}/);
+        if (constMatch) {
+          acc[curr] = replaceConstantsInString(constantMap[curr], constantMap);
+        }
       } else {
         acc[curr] = constantMap[curr];
       }

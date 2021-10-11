@@ -24,7 +24,6 @@ export default class ReferencesProvider extends DefaultProvider {
         {},
       );
       let localRefs = await getLocalRefs();
-      console.log("localRefs", localRefs);
       let roleMap = await populateRoleMap();
       this.dictionary = {
         ...Object.keys(intermediateMap).reduce((acc, curr) => {

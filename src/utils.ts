@@ -91,19 +91,24 @@ export async function getLinkStatus(
   gDA: Diagnostic[],
   context: ExtensionContext,
 ) {
-  let doubleSlashMatches = link.href.match(/https?:\/\/.*(\/\/).*/);
-  if (doubleSlashMatches && doubleSlashMatches.length === 2) {
-    reportError(
-      createError(
-        new Error(`It looks like you've added an extra '/'.
+  if (typeof link.href === "string" && link.href.endsWith(".git")) {
+    link.href = link.href.slice(0, -".git".length);
+  }
+  if (typeof link.href === "string") {
+    let doubleSlashMatches = link.href.match(/https?:\/\/.*(\/\/).*/);
+    if (doubleSlashMatches && doubleSlashMatches.length === 2) {
+      reportError(
+        createError(
+          new Error(`It looks like you've added an extra '/'.
 URL: ${link.href}`),
-        uri,
-        link,
-      ),
-      gDC,
-      gDA,
-      context,
-    );
+          uri,
+          link,
+        ),
+        gDC,
+        gDA,
+        context,
+      );
+    }
   }
 
   if (!seenUrls.has(link.href)) {
@@ -112,8 +117,9 @@ URL: ${link.href}`),
       linkError: undefined,
     });
     if (
-      link.href.startsWith("https://github.com/") ||
-      link.href.startsWith("http://github.com/")
+      typeof link.href === "string" &&
+      (link.href.startsWith("https://github.com/") ||
+        link.href.startsWith("http://github.com/"))
     ) {
       let [owner, repo, ..._rest] = link.href
         .replace(/https?:\/\/github\.com\//, "")
@@ -158,7 +164,7 @@ URL: ${link.href}`),
       } else {
         getRegularUrl(link, seenUrls, uri, gDC, gDA, context);
       }
-    } else {
+    } else if (typeof link.href === "string") {
       getRegularUrl(link, seenUrls, uri, gDC, gDA, context);
     }
   } else if (seenUrls.get(link.href)?.linkStatus === LinkStatus.NOTOK) {
