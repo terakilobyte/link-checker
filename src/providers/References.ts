@@ -54,8 +54,11 @@ export default class ReferencesProvider extends DefaultProvider {
     let results = Array<parseResult>();
 
     while ((match = this.regex.exec(document.getText())) !== null) {
-      let whichMatch = match[1] === "ref" && refWithBrackets(match) ? 3 : 2;
-      if (this.dictionary[match[whichMatch]] && match[1] === "ref") {
+      let whichMatch = refWithBrackets(match) ? 3 : 2;
+      // don't handle doc links
+      if (match[1] === "doc") {
+        continue;
+      } else if (this.dictionary[match[whichMatch]] && match[1] === "ref") {
         // :ref:`description <ref-name>` vs :ref:`ref-name`
         let value = match[whichMatch];
         let href = this.dictionary[match[whichMatch]];
@@ -82,12 +85,11 @@ export default class ReferencesProvider extends DefaultProvider {
         let href = this.dictionary[match[1]].replace("%s", match[whichMatch]);
         let range = getRange(document, match, whichMatch);
         results.push({
-          value: match[2],
+          value: match[whichMatch],
           range,
           href,
         });
-        // don't handle doc links
-      } else if (match[1] !== "doc") {
+      } else {
         let range = getRange(document, match, whichMatch);
         let value = match[whichMatch];
         let href = `https://no.${value}.was.found`;
