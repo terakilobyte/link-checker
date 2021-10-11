@@ -31,7 +31,7 @@ here is a :ref:`fantastic` here is another :ref:`2 <mediocre-fantastic>` here is
    This is a :ref:`valid server ref <replica-set-read-preference-behavior>`
    This is an :ref:`nvalid ref <invalid_ref_sucka-fish>`
    this is a bad `url <https://www.flibbertypoo.com>`__
-   this is a bad `url <https://www.github.com>`__
+   this is a good `url <https://www.github.com>`__
 
    * - D
      - | `Vibe.D native MongoDB driver <http://vibed.org/docs#mongo>`__
