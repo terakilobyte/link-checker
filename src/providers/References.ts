@@ -15,7 +15,7 @@ export default class ReferencesProvider extends DefaultProvider {
   constructor() {
     super();
     this.regex =
-      /:([\w\s\-_=+!@#$%^&*(\)]*):`([\w\s\-_=+!@#$%^&*(\)]*)<?([\w\s\-_=+!@#$%^&*(\)]*)>?/g;
+      /:([\w\s\-_=+!@#$%^&*(\)]*):`([\w\s\-_=+!@#$%^&*(\)]*)<?([\w\s\-_\.\\\/=+!@#$%^&*(\)]*)>?/g;
   }
 
   async loadDictionary(): Promise<boolean> {
@@ -56,39 +56,20 @@ export default class ReferencesProvider extends DefaultProvider {
     while ((match = this.regex.exec(document.getText())) !== null) {
       let whichMatch = match[1] === "ref" && refWithBrackets(match) ? 3 : 2;
       if (this.dictionary[match[whichMatch]] && match[1] === "ref") {
-        // :ref:`decription <ref-name>` vs :ref:`ref-name`
+        // :ref:`description <ref-name>` vs :ref:`ref-name`
         let value = match[whichMatch];
         let href = this.dictionary[match[whichMatch]];
-        let range = new Range(
-          document.positionAt(
-            match.index + match[0].indexOf(match[whichMatch]),
-          ),
-          document.positionAt(
-            match.index +
-              match[0].indexOf(match[whichMatch]) +
-              match[whichMatch].length,
-          ),
-        );
+        let range = getRange(document, match, whichMatch);
         results.push({
           value,
           range,
           href,
         });
       } else if (match[1] === "ref") {
-        // :ref:`decription <ref-name>` vs :ref:`ref-name`
+        // :ref:`description <ref-name>` vs :ref:`ref-name`
         let value = match[whichMatch];
         let href = `https://no.${value}.was.found`;
-        let range;
-        range = new Range(
-          document.positionAt(
-            match.index + match[0].indexOf(match[whichMatch]),
-          ),
-          document.positionAt(
-            match.index +
-              match[0].indexOf(match[whichMatch]) +
-              match[whichMatch].length,
-          ),
-        );
+        let range = getRange(document, match, whichMatch);
         results.push({
           value,
           range,
@@ -98,13 +79,8 @@ export default class ReferencesProvider extends DefaultProvider {
         match[1] !== "ref" &&
         this.dictionary[match[1]] !== undefined
       ) {
-        let href = this.dictionary[match[1]].replace("%s", match[2]);
-        let range = new Range(
-          document.positionAt(match.index + match[0].indexOf(match[2])),
-          document.positionAt(
-            match.index + match[0].indexOf(match[2]) + match[2].length,
-          ),
-        );
+        let href = this.dictionary[match[1]].replace("%s", match[whichMatch]);
+        let range = getRange(document, match, whichMatch);
         results.push({
           value: match[2],
           range,
@@ -112,13 +88,8 @@ export default class ReferencesProvider extends DefaultProvider {
         });
         // don't handle doc links
       } else if (match[1] !== "doc") {
-        let range = new Range(
-          document.positionAt(match.index + match[0].indexOf(match[2])),
-          document.positionAt(
-            match.index + match[0].indexOf(match[2]) + match[2].length,
-          ),
-        );
-        let value = match[2];
+        let range = getRange(document, match, whichMatch);
+        let value = match[whichMatch];
         let href = `https://no.${value}.was.found`;
         results.push({
           value,
@@ -135,6 +106,23 @@ export default class ReferencesProvider extends DefaultProvider {
     }
     return results;
   }
+}
+
+function getRange(
+  document: TextDocument,
+  match: RegExpExecArray,
+  whichMatch: number,
+) {
+  let range;
+  range = new Range(
+    document.positionAt(match.index + match[0].indexOf(match[whichMatch])),
+    document.positionAt(
+      match.index +
+        match[0].indexOf(match[whichMatch]) +
+        match[whichMatch].length,
+    ),
+  );
+  return range;
 }
 
 async function populateRefs(
@@ -162,6 +150,6 @@ async function asyncReducer(acc: any, curr: any) {
   }
 }
 
-const refWithBrackets = (match: RegExpExecArray) => {
+function refWithBrackets(match: RegExpExecArray) {
   return match[3] !== "";
-};
+}
