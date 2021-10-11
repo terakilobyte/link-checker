@@ -10,11 +10,10 @@ import {
   commands,
 } from "vscode";
 import LinkChecker from "./linkCheck";
+import { getLocalRefs } from "./parsers/localRefParser";
 import ConstantsProvider from "./providers/Constants";
 import ReferencesProvider from "./providers/References";
 import RSTProvider from "./providers/RST";
-
-import { getLocalRefs } from "./parsers/localRefParser";
 
 let gDC: DiagnosticCollection;
 

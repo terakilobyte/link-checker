@@ -18,7 +18,9 @@ export default class ConstantsProvider extends DefaultProvider {
         this.dictionary = readConstants((await readSnootyToml()).constants);
         resolve(true);
       } catch (e) {
-        reject(false);
+        console.error("Constants", e);
+        this.dictionary = {};
+        resolve(true);
       }
     });
   }

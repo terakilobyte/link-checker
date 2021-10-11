@@ -3,6 +3,7 @@ import fetchInvFile from "../parsers/intersphinxParser";
 import readSnootyToml from "../parsers/snootyTomlParser";
 import { DefaultProvider, parseResult } from "./Default";
 import { populateRoleMap } from "../parsers/rolesParser";
+import { getLocalRefs } from "../parsers/localRefParser";
 
 type refMap = { [key: string]: any };
 
@@ -22,20 +23,24 @@ export default class ReferencesProvider extends DefaultProvider {
         asyncReducer,
         {},
       );
+      let localRefs = await getLocalRefs();
+      console.log("localRefs", localRefs);
+      let roleMap = await populateRoleMap();
       this.dictionary = {
         ...Object.keys(intermediateMap).reduce((acc, curr) => {
           return { ...acc, ...intermediateMap[curr] };
         }, {}),
-        ...(await populateRoleMap()),
+        ...roleMap,
+        ...localRefs,
       };
       return true;
     } catch (e) {
-      return false;
+      console.error("error loading roles and refs", e);
+      throw e;
     }
   }
 
   provideDocumentLinks(document: TextDocument): DocumentLink[] {
-    let links = Array<DocumentLink>();
     let results = this.parse(document);
 
     return results.map(
