@@ -81,7 +81,8 @@ export default class ReferencesProvider extends DefaultProvider {
           range,
           href,
         });
-      } else {
+        // don't handle doc links
+      } else if (match[1] !== "doc") {
         let range = new Range(
           document.positionAt(match.index + match[0].indexOf(match[2])),
           document.positionAt(
