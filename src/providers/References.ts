@@ -13,7 +13,7 @@ export default class ReferencesProvider extends DefaultProvider {
 
   constructor() {
     super();
-    this.regex = /:(.*):`.*<(.*)>`/g;
+    this.regex = /:(.*):`(.*)(\s*<(.*)>)?`/g;
   }
 
   async loadDictionary(): Promise<boolean> {
@@ -52,6 +52,9 @@ export default class ReferencesProvider extends DefaultProvider {
     let results = Array<parseResult>();
 
     while ((match = this.regex.exec(document.getText())) !== null) {
+      if (match[1] === "ref") {
+        console.log("ref", match);
+      }
       if (this.dictionary[match[2]] && match[1] === "ref") {
         let href = this.dictionary[match[2]];
         let range = new Range(
