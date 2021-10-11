@@ -13,7 +13,8 @@ export default class ReferencesProvider extends DefaultProvider {
 
   constructor() {
     super();
-    this.regex = /:(.*):`(.*)(\s*<(.*)>)?`/g;
+    this.regex =
+      /:([\w\s\-_=+!@#$%^&*(\)]*):`([\w\s\-_=+!@#$%^&*(\)]*)<?([\w\s\-_=+!@#$%^&*(\)]*)>?/g;
   }
 
   async loadDictionary(): Promise<boolean> {
@@ -52,19 +53,39 @@ export default class ReferencesProvider extends DefaultProvider {
     let results = Array<parseResult>();
 
     while ((match = this.regex.exec(document.getText())) !== null) {
-      if (match[1] === "ref") {
-        console.log("ref", match);
-      }
-      if (this.dictionary[match[2]] && match[1] === "ref") {
-        let href = this.dictionary[match[2]];
+      let whichMatch = match[1] === "ref" && refWithBrackets(match) ? 3 : 2;
+      if (this.dictionary[match[whichMatch]] && match[1] === "ref") {
+        // :ref:`decription <ref-name>` vs :ref:`ref-name`
+        let value = match[whichMatch];
+        let href = this.dictionary[match[whichMatch]];
         let range = new Range(
-          document.positionAt(match.index + match[0].indexOf(match[2])),
+          document.positionAt(match.index + match[0].indexOf(match[3])),
           document.positionAt(
-            match.index + match[0].indexOf(match[2]) + match[2].length,
+            match.index + match[0].indexOf(match[3]) + match[3].length,
           ),
         );
         results.push({
-          value: match[2],
+          value,
+          range,
+          href,
+        });
+      } else if (match[1] === "ref") {
+        // :ref:`decription <ref-name>` vs :ref:`ref-name`
+        let value = match[whichMatch];
+        let href = `https://no.${value}.was.found`;
+        let range;
+        range = new Range(
+          document.positionAt(
+            match.index + match[0].indexOf(match[whichMatch]),
+          ),
+          document.positionAt(
+            match.index +
+              match[0].indexOf(match[whichMatch]) +
+              match[whichMatch].length,
+          ),
+        );
+        results.push({
+          value,
           range,
           href,
         });
@@ -129,3 +150,7 @@ async function asyncReducer(acc: any, curr: any) {
     return { ...(await acc), [curr]: { error } };
   }
 }
+
+const refWithBrackets = (match: RegExpExecArray) => {
+  return match[3] !== "";
+};

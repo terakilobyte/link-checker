@@ -14,18 +14,13 @@ Community Libraries
 
    // another comment
 
-here is a :ref:`fantastic`
-here is another :ref:`for stuff <fantastic>`
-here is a :ref:`line break ref
-<fantastic>`
+here is a :ref:`fantastic` here is another :ref:`2 <mediocre-fantastic>` here is a :ref:`
+<not_great-fantastic>`
 
    http://a.bad.url
 
    [some markdown link](https://www.google.com)
    [some other link](https://a.bad.url)
-
-   This is an :ref:`invalid ref <flibbertypiezizzlwe>`
-* :ref:`Version 4.1 <version-4.1>`
 
    :node-api:`foo </AggregationCursor.html>`
    :node-api:`foo <AggregationCursorz.html>`
@@ -33,10 +28,6 @@ here is a :ref:`line break ref
    This is a `constant link that should fail <{+api+}/flibbertypoo>`__
    This is a :ref:`valid atlas ref <connect-to-your-cluster>`
    This is a :ref:`valid server ref <replica-set-read-preference-behavior>`
-   This is an :ref:`invalid ref <flibbertypie>`
-   This is an :ref:`invalid ref <flibbertypie>`
-   This is an :ref:`invalid ref <flibbertypiezon>`
-
 
 
    * - D
