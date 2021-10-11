@@ -15,7 +15,7 @@ export default class ReferencesProvider extends DefaultProvider {
   constructor() {
     super();
     this.regex =
-      /:([\w\s\-\._=+!@#$%^&*(\)]*):`([\w\s\-\._=+!@#$%^&*(\)]*)<?([\w\s\-_\.\\\/=+!@#$%^&*(\)]*)>?/g;
+      /:([\w\s\-\.\d_=+!@#$%^&*(\)]*):`([\w\s\-_\.\d\\\/=+!@#$%^&*(\)]*)<?([\w\s\-_\.\d\\\/=+!@#$%^&*(\)]*)>?/g;
   }
 
   async loadDictionary(): Promise<boolean> {
