@@ -29,3 +29,9 @@ Initial release of Link Checker.
 
 * :ref:, :role:, and {+constant+} links are now clickable
 * Major internal refactor. The size of the extension has now been shrunk to < 90kb
+
+## 1.5.0
+
+* Local `:ref:`s are now supported
+* Won't check `:ref:`, `:role:`, or `{+constant+}` links if no `snooty.toml` file is
+  found

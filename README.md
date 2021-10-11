@@ -19,6 +19,6 @@ Once you have an API key with full **repos** permissions, set your `link-checker
 
 ## Known Issues
 
-Doesn't check local `:ref:`s
+Doens't link to specific file location of local ref declarations.
 
 **Enjoy!**
