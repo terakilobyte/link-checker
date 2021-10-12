@@ -56,48 +56,35 @@ export default class ReferencesProvider extends DefaultProvider {
     while ((match = this.regex.exec(document.getText())) !== null) {
       let whichMatch = refWithBrackets(match) ? 3 : 2;
       // don't handle doc links
+      let report;
       if (match[1] === "doc") {
         continue;
       } else if (this.dictionary[match[whichMatch]] && match[1] === "ref") {
         // :ref:`description <ref-name>` vs :ref:`ref-name`
-        let value = match[whichMatch];
-        let href = this.dictionary[match[whichMatch]];
-        let range = getRange(document, match, whichMatch);
-        results.push({
-          value,
-          range,
-          href,
-        });
-      } else if (match[1] === "ref") {
-        // :ref:`description <ref-name>` vs :ref:`ref-name`
-        let value = match[whichMatch];
-        let href = `https://no.${value}.was.found`;
-        let range = getRange(document, match, whichMatch);
-        results.push({
-          value,
-          range,
-          href,
-        });
+        report = this.report(
+          document,
+          match,
+          whichMatch,
+          (value) => this.dictionary[value],
+        );
       } else if (
         match[1] !== "ref" &&
         this.dictionary[match[1]] !== undefined
       ) {
-        let href = this.dictionary[match[1]].replace("%s", match[whichMatch]);
-        let range = getRange(document, match, whichMatch);
-        results.push({
-          value: match[whichMatch],
-          range,
-          href,
+        report = this.report(document, match, whichMatch, (value) => {
+          assert(match);
+          return this.dictionary[match[1]].replace("%s", value);
         });
       } else {
-        let range = getRange(document, match, whichMatch);
-        let value = match[whichMatch];
-        let href = `https://no.${value}.was.found`;
-        results.push({
-          value,
-          range,
-          href,
-        });
+        report = this.report(
+          document,
+          match,
+          whichMatch,
+          (value) => `https://no.${value}.was.found`,
+        );
+      }
+      if (report) {
+        results.push(report);
       }
     }
 
@@ -107,6 +94,22 @@ export default class ReferencesProvider extends DefaultProvider {
       this.dictionary[match[1]] = Uri.file(document.uri.fsPath);
     }
     return results;
+  }
+
+  private report(
+    document: TextDocument,
+    match: RegExpExecArray,
+    whichMatch: number,
+    hrefFn: (value: string) => string,
+  ) {
+    let value = match[whichMatch];
+    let href = hrefFn(value);
+    let range = getRange(document, match, whichMatch);
+    return {
+      value,
+      range,
+      href,
+    };
   }
 }
 
